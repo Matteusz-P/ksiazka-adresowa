@@ -77,23 +77,6 @@ string pobieranieNumeruTelefonu ()
 
     return numer_telefonu;
 }
-int generowanieIDkontaktu (vector <daneOsobowe>& ksiazkaAdresowa)
-{
-    int ilosc = ksiazkaAdresowa.size();
-    int wygenerowaneID;
-
-    if(ilosc>0)
-    {
-        wygenerowaneID=ksiazkaAdresowa[ilosc-1].id;
-        wygenerowaneID++;
-        return wygenerowaneID;
-    }
-    else
-    {
-        wygenerowaneID=1;
-        return wygenerowaneID;
-    }
-}
 int generowanieIDuzytkownika (vector <Uzytkownik>& uzytkownicy)
 {
     int ilosc = uzytkownicy.size();
@@ -112,7 +95,7 @@ int generowanieIDuzytkownika (vector <Uzytkownik>& uzytkownicy)
     }
 }
 
-void pobieranieDanychkontaktu (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
+int pobieranieDanychkontaktu (vector <daneOsobowe>& ksiazkaAdresowa, char wybor, int ostatniId)
 {
 
     daneOsobowe daneZnajomego;
@@ -131,22 +114,25 @@ void pobieranieDanychkontaktu (vector <daneOsobowe>& ksiazkaAdresowa, char wybor
         cout<<"Podaj adres: ";
         getline(cin,daneZnajomego.adres );
         cin.sync();
-        daneZnajomego.id=generowanieIDkontaktu(ksiazkaAdresowa);
+        daneZnajomego.id=ostatniId+1;
         system("cls");
         ksiazkaAdresowa.push_back(daneZnajomego);
+        ostatniId++;
         cout<<"Kontakt zostal zapisany"<<endl;
         cout<<"Czy chcesz zapisac kolejny kontakt?"<<endl;
         cout<<"1 .TAK"<<endl;
         cout<<"2. NIE"<<endl;
         cin>>wybor;
     }
+    return daneZnajomego.id;
 }
 
 
-void otwieraniePlikuZapisanychDanych (fstream &plikKontaktow, vector <daneOsobowe>& ksiazkaAdresowa, int IDuzytkownika)
+int otwieraniePlikuZapisanychDanych ( vector <daneOsobowe>& ksiazkaAdresowa, int IDuzytkownika)
 {
     string linia;
     int idZPliku;
+    fstream plikKontaktow;
     daneOsobowe daneZnajomego;
     plikKontaktow.open("wizytowka.txt", ios::in);
 
@@ -154,6 +140,7 @@ void otwieraniePlikuZapisanychDanych (fstream &plikKontaktow, vector <daneOsobow
     {
         cout<<"Nie udalo sie otworzyc pliku!";
         Sleep(1000);
+        return 0;
 
     }
 
@@ -167,14 +154,14 @@ void otwieraniePlikuZapisanychDanych (fstream &plikKontaktow, vector <daneOsobow
         {
             pobraneDane.push_back(danaOsobowa);
         }
-        for(int i =0; i<6; i++)
+        for(int i =0; i<7; i++)
         {
             switch(i)
             {
             case 0:
                 daneZnajomego.id = atoi(pobraneDane[i].c_str());
                 break;
-          case 1:
+            case 1:
                 idZPliku=atoi(pobraneDane[i].c_str());
                 break;
             case 2:
@@ -201,11 +188,13 @@ void otwieraniePlikuZapisanychDanych (fstream &plikKontaktow, vector <daneOsobow
     }
     plikKontaktow.close();
 
+    return daneZnajomego.id;
 }
 
-void ladowanieUzytkownikowZPliku (fstream &plikUzytkowinkow, vector <Uzytkownik>& uzytkownicy)
+void ladowanieUzytkownikowZPliku (vector <Uzytkownik>& uzytkownicy)
 {
     string linia;
+    fstream plikUzytkowinkow;
     Uzytkownik daneLogowania;
     plikUzytkowinkow.open("Uzytkownicy.txt", ios::in);
 
@@ -247,525 +236,620 @@ void ladowanieUzytkownikowZPliku (fstream &plikUzytkowinkow, vector <Uzytkownik>
     plikUzytkowinkow.close();
 }
 
-    void zapisanieDanychDoPliku (fstream &plikKontaktow, vector <daneOsobowe>& ksiazkaAdresowa, int IdZalogowanegoUzytkownika)
-    {
-        int ilosc = ksiazkaAdresowa.size();
+void zapisanieDanychDoPliku ( vector <daneOsobowe>& ksiazkaAdresowa, int IdZalogowanegoUzytkownika)
+{
+    fstream plikKontaktow;
+    int ilosc = ksiazkaAdresowa.size();
 
-        plikKontaktow.open("wizytowka.txt",ios::out);
+    plikKontaktow.open("wizytowka.txt",ios::out);
+    for (int i=0; i<ilosc; i++)
+    {
+        plikKontaktow<<ksiazkaAdresowa[i].id<<"|";
+        plikKontaktow<<IdZalogowanegoUzytkownika<<"|";
+        plikKontaktow<<ksiazkaAdresowa[i].imie<<"|";
+        plikKontaktow<<ksiazkaAdresowa[i].nazwisko<<"|";
+        plikKontaktow<<ksiazkaAdresowa[i].email<<"|";
+        plikKontaktow<<ksiazkaAdresowa[i].numer_telefonu<<"|";
+        plikKontaktow<<ksiazkaAdresowa[i].adres<<"|"<<endl;
+    }
+    plikKontaktow.close();
+}
+void zapisanieUzytkownikow ( vector <Uzytkownik>& uzytkownicy)
+{
+    fstream plikUzytkowinkow;
+    int ilosc = uzytkownicy.size();
+
+    plikUzytkowinkow.open("Uzytkownicy.txt",ios::out);
+    for (int i=0; i<ilosc; i++)
+    {
+        plikUzytkowinkow<<uzytkownicy[i].id<<"|";
+        plikUzytkowinkow<<uzytkownicy[i].login<<"|";
+        plikUzytkowinkow<<uzytkownicy[i].haslo<<"|"<<endl;
+    }
+    plikUzytkowinkow.close();
+}
+
+void wyszukiwaniePoImieniu (vector <daneOsobowe>& ksiazkaAdresowa)
+{
+    string imie;
+    string imieDuzymi;
+    int liczbaWynikow=0;
+    int ilosc = ksiazkaAdresowa.size();
+
+    system("cls");
+    cout<<"Podaj imie znajomego: ";
+    cin>>imie;
+    transform(imie.begin(), imie.end(), imie.begin(), ::toupper);
+    system("cls");
+    for (int i=0; i<ilosc; i++)
+    {
+        imieDuzymi=ksiazkaAdresowa[i].imie;
+        transform(imieDuzymi.begin(), imieDuzymi.end(), imieDuzymi.begin(), ::toupper);
+        if(imieDuzymi==imie)
+        {
+            cout<<ksiazkaAdresowa[i].id<<endl;
+            cout<<ksiazkaAdresowa[i].imie<<endl;
+            cout<<ksiazkaAdresowa[i].nazwisko<<endl;
+            cout<<ksiazkaAdresowa[i].email<<endl;
+            cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
+            cout<<ksiazkaAdresowa[i].adres<<endl;
+            cout<<"-------------"<<endl;
+            liczbaWynikow++;
+        }
+    }
+    if(liczbaWynikow==0)cout<<"Nie znaleziono kontaktow o podanym imieniu"<<endl;
+    cout<<"-------------"<<endl;
+    cout<<"Nacisnij 'Enter', aby przejsc do nowego wyszukiwania"<<endl;
+    Sleep(1000);
+    getchar();
+    getchar();
+}
+void wyszukiwaniePoNaziwsku (vector <daneOsobowe>& ksiazkaAdresowa)
+{
+    int liczbaWynikow=0;
+    string nazwisko;
+    string nazwiskoDuzymi;
+    int ilosc = ksiazkaAdresowa.size();
+
+    system("cls");
+    cout<<"Podaj imie znajomego: ";
+    cin>>nazwisko;
+    transform(nazwisko.begin(), nazwisko.end(), nazwisko.begin(), ::toupper);
+    system("cls");
+    for (int i=0; i<ilosc; i++)
+    {
+        nazwiskoDuzymi=ksiazkaAdresowa[i].nazwisko;
+        transform(nazwiskoDuzymi.begin(), nazwiskoDuzymi.end(), nazwiskoDuzymi.begin(), ::toupper);
+        if(nazwiskoDuzymi==nazwisko)
+        {
+            cout<<ksiazkaAdresowa[i].id<<endl;
+            cout<<ksiazkaAdresowa[i].imie<<endl;
+            cout<<ksiazkaAdresowa[i].nazwisko<<endl;
+            cout<<ksiazkaAdresowa[i].email<<endl;
+            cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
+            cout<<ksiazkaAdresowa[i].adres<<endl;
+            cout<<"-------------"<<endl;
+            liczbaWynikow++;
+        }
+    }
+    if(liczbaWynikow==0)cout<<"Nie znaleziono kontaktow o podanym nazwisku"<<endl;
+    cout<<"-------------"<<endl;
+    cout<<"Nacisnij 'Enter', aby przejsc do nowego wyszukiwania"<<endl;
+    Sleep(1000);
+    getchar();
+    getchar();
+}
+void wyswietlanieWszystkichKontaktow (vector <daneOsobowe>& ksiazkaAdresowa)
+{
+    int ilosc = ksiazkaAdresowa.size();
+
+    system("cls");
+
+    if (ksiazkaAdresowa.empty()==FALSE)
+    {
         for (int i=0; i<ilosc; i++)
         {
-            plikKontaktow<<ksiazkaAdresowa[i].id<<"|";
-            plikKontaktow<<IdZalogowanegoUzytkownika<<"|";
-            plikKontaktow<<ksiazkaAdresowa[i].imie<<"|";
-            plikKontaktow<<ksiazkaAdresowa[i].nazwisko<<"|";
-            plikKontaktow<<ksiazkaAdresowa[i].email<<"|";
-            plikKontaktow<<ksiazkaAdresowa[i].numer_telefonu<<"|";
-            plikKontaktow<<ksiazkaAdresowa[i].adres<<"|"<<endl;
+            cout<<ksiazkaAdresowa[i].id<<endl;
+            cout<<ksiazkaAdresowa[i].imie<<endl;
+            cout<<ksiazkaAdresowa[i].nazwisko<<endl;
+            cout<<ksiazkaAdresowa[i].email<<endl;
+            cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
+            cout<<ksiazkaAdresowa[i].adres<<endl;
+            cout<<"-------------"<<endl;
         }
-        plikKontaktow.close();
-        cout<<"Ksiazka adresowa zostala zapisana";
+        cout<<"Nacisnij 'Enter', aby wrocic do menu"<<endl;
         Sleep(1000);
+        getchar();
+        getchar();
     }
-    void zapisanieUzytkownikow (fstream &plikUzytkowinkow, vector <Uzytkownik>& uzytkownicy)
+    else
     {
-        int ilosc = uzytkownicy.size();
-
-        plikUzytkowinkow.open("Uzytkownicy.txt",ios::out);
-        for (int i=0; i<ilosc; i++)
-        {
-            plikUzytkowinkow<<uzytkownicy[i].id<<"|";
-            plikUzytkowinkow<<uzytkownicy[i].login<<"|";
-            plikUzytkowinkow<<uzytkownicy[i].haslo<<"|"<<endl;
-        }
-        plikUzytkowinkow.close();
+        cout<<"Nie masz jeszcze kontaktow.";
+        Sleep(2000);
     }
 
-    void wyszukiwaniePoImieniu (vector <daneOsobowe>& ksiazkaAdresowa)
+}
+void zmianaDanych ( vector<daneOsobowe>::iterator zmienianyKontakt, char wybranaOpcja)
+{
+    switch (wybranaOpcja)
+    {
+    case '1':
     {
         string imie;
-        string imieDuzymi;
-        int liczbaWynikow=0;
-        int ilosc = ksiazkaAdresowa.size();
-
         system("cls");
-        cout<<"Podaj imie znajomego: ";
+        cout<<"Prosze podac nowe imie: ";
         cin>>imie;
-        transform(imie.begin(), imie.end(), imie.begin(), ::toupper);
-        system("cls");
-        for (int i=0; i<ilosc; i++)
-        {
-            imieDuzymi=ksiazkaAdresowa[i].imie;
-            transform(imieDuzymi.begin(), imieDuzymi.end(), imieDuzymi.begin(), ::toupper);
-            if(imieDuzymi==imie)
-            {
-                cout<<ksiazkaAdresowa[i].id<<endl;
-                cout<<ksiazkaAdresowa[i].imie<<endl;
-                cout<<ksiazkaAdresowa[i].nazwisko<<endl;
-                cout<<ksiazkaAdresowa[i].email<<endl;
-                cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
-                cout<<ksiazkaAdresowa[i].adres<<endl;
-                cout<<"-------------"<<endl;
-                liczbaWynikow++;
-            }
-        }
-        if(liczbaWynikow==0)cout<<"Nie znaleziono kontaktow o podanym imieniu"<<endl;
-        cout<<"-------------"<<endl;
-        cout<<"Nacisnij 'Enter', aby przejsc do nowego wyszukiwania"<<endl;
+        zmienianyKontakt->imie=imie;
+        cout<<"Imie zostalo zmienione.";
         Sleep(1000);
-        getchar();
-        getchar();
+        break;
     }
-    void wyszukiwaniePoNaziwsku (vector <daneOsobowe>& ksiazkaAdresowa)
+    case '2':
     {
-        int liczbaWynikow=0;
         string nazwisko;
-        string nazwiskoDuzymi;
-        int ilosc = ksiazkaAdresowa.size();
-
         system("cls");
-        cout<<"Podaj imie znajomego: ";
+        cout<<"Prosze podac nowe nazwisko: ";
         cin>>nazwisko;
-        transform(nazwisko.begin(), nazwisko.end(), nazwisko.begin(), ::toupper);
-        system("cls");
-        for (int i=0; i<ilosc; i++)
-        {
-            nazwiskoDuzymi=ksiazkaAdresowa[i].nazwisko;
-            transform(nazwiskoDuzymi.begin(), nazwiskoDuzymi.end(), nazwiskoDuzymi.begin(), ::toupper);
-            if(nazwiskoDuzymi==nazwisko)
-            {
-                cout<<ksiazkaAdresowa[i].id<<endl;
-                cout<<ksiazkaAdresowa[i].imie<<endl;
-                cout<<ksiazkaAdresowa[i].nazwisko<<endl;
-                cout<<ksiazkaAdresowa[i].email<<endl;
-                cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
-                cout<<ksiazkaAdresowa[i].adres<<endl;
-                cout<<"-------------"<<endl;
-                liczbaWynikow++;
-            }
-        }
-        if(liczbaWynikow==0)cout<<"Nie znaleziono kontaktow o podanym nazwisku"<<endl;
-        cout<<"-------------"<<endl;
-        cout<<"Nacisnij 'Enter', aby przejsc do nowego wyszukiwania"<<endl;
+        zmienianyKontakt->nazwisko=nazwisko;
+        cout<<"Nazwisko zostalo zmienione.";
         Sleep(1000);
-        getchar();
-        getchar();
+        break;
     }
-    void wyswietlanieWszystkichKontaktow (vector <daneOsobowe>& ksiazkaAdresowa)
+    case '3':
     {
-        int ilosc = ksiazkaAdresowa.size();
+        string email;
+        system("cls");
+        cout<<"Prosze podac nowy email: ";
+        cin>>email;
+        zmienianyKontakt->email=email;
+        cout<<"Email zostal zmieniony.";
+        Sleep(1000);
+        break;
+    }
+    case '4':
+    {
+        string numerTelefonu;
+        system("cls");
+        cout<<"Prosze podac nowy numer telefonu: ";
+        cin>>numerTelefonu;
+        zmienianyKontakt->numer_telefonu=numerTelefonu;
+        cout<<"Numer telefonu zostal zmieniony.";
+        Sleep(1000);
+        break;
+    }
+    case '5':
+    {
+        system("cls");
+        string adres;
+        system("cls");
+        cout<<"Prosze podac nowy adres: ";
+        cin>>adres;
+        zmienianyKontakt->adres=adres;
+        cout<<"Adres zostal zmieniony.";
+        Sleep(1000);
+        break;
+    }
+    case '6':
+    {
+        system("cls");
+        break;
+    }
+    }
+
+}
+
+void szukaniePoIDKontaktu (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
+{
+    vector<daneOsobowe>::iterator zmienianyKontakt;
+    int szukaneID;
+    char wybranaOpcja;
+
+    system("cls");
+
+    cout<<"Jakie dane chcesz zmienic?"<<endl;
+    cout<<"1. Imie"<<endl;
+    cout<<"2. Nazwisko"<<endl;
+    cout<<"3. Email"<<endl;
+    cout<<"4. Numer telefonu"<<endl;
+    cout<<"5. Adres"<<endl;
+    cout<<"6. Powrot do menu glownego"<<endl;
+    cin>>wybranaOpcja;
+
+    while(wybranaOpcja!='6'&&wybor!='2')
+    {
 
         system("cls");
+        cout<<"Prosze podac ID kontaktu: ";
+        cin>>szukaneID;
 
-        if (ksiazkaAdresowa.empty()==FALSE)
+        for (zmienianyKontakt =ksiazkaAdresowa.begin(); zmienianyKontakt<=ksiazkaAdresowa.end(); zmienianyKontakt++)
         {
-            for (int i=0; i<ilosc; i++)
+            if(zmienianyKontakt->id==szukaneID)
             {
-                cout<<ksiazkaAdresowa[i].id<<endl;
-                cout<<ksiazkaAdresowa[i].imie<<endl;
-                cout<<ksiazkaAdresowa[i].nazwisko<<endl;
-                cout<<ksiazkaAdresowa[i].email<<endl;
-                cout<<ksiazkaAdresowa[i].numer_telefonu<<endl;
-                cout<<ksiazkaAdresowa[i].adres<<endl;
-                cout<<"-------------"<<endl;
+                system("cls");
+                cout<<"Zaleziony kontakt to "<<zmienianyKontakt->imie<<" "<<zmienianyKontakt->nazwisko<<" "<<zmienianyKontakt->adres<<endl;
+                cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
+                cout<<"1. TAK"<<endl;
+                cout<<"2. NIE"<<endl;
+                cin>>wybor;
+                if (wybor=='2')
+                {
+                    zmianaDanych(zmienianyKontakt,wybranaOpcja);
+                }
+                break;
             }
-            cout<<"Nacisnij 'Enter', aby wrocic do menu"<<endl;
-            Sleep(1000);
-            getchar();
-            getchar();
+            else if (zmienianyKontakt==ksiazkaAdresowa.end())
+            {
+                system("cls");
+                cout<<"Nie znaleziono kontaktu"<<endl;
+                cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
+                cout<<"1. TAK"<<endl;
+                cout<<"2. NIE"<<endl;
+                cin>>wybor;
+
+            }
         }
+    }
+
+}
+
+void usuwanieKontaktu     (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
+{
+    vector<daneOsobowe>::iterator zmienianyKontakt;
+    int szukaneID;
+    char wybranaOpcja;
+    do
+    {
+        system("cls");
+        cout<<"Prosze podac ID kontaktu: ";
+        cin>>szukaneID;
+
+
+        for (zmienianyKontakt =ksiazkaAdresowa.begin(); zmienianyKontakt<=ksiazkaAdresowa.end(); zmienianyKontakt++)
+        {
+            if(zmienianyKontakt->id==szukaneID)
+            {
+                system("cls");
+                cout<<"Twoj kontakt to "<<zmienianyKontakt->imie<<" "<<zmienianyKontakt->nazwisko<<" "<<zmienianyKontakt->adres<<endl;
+                cout<<"Czy chcesz usunac ten kontakt?"<<endl;
+                cout<<"1. TAK"<<endl;
+                cout<<"2. NIE"<<endl;
+                cin>>wybranaOpcja;
+                switch (wybranaOpcja)
+                {
+                case '1':
+                {
+                    system("cls");
+                    ksiazkaAdresowa.erase(zmienianyKontakt);
+                    cout<<"Kontakt zostal usuniety";
+                    Sleep(1000);
+
+                }
+                case '2':
+                {
+                    system("cls");
+                    cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
+                    cout<<"1. TAK"<<endl;
+                    cout<<"2. NIE"<<endl;
+                    cin>>wybor;
+
+                }
+                }
+                break;
+            }
+            else if (zmienianyKontakt==ksiazkaAdresowa.end())
+            {
+                system("cls");
+                cout<<"Nie znaleziono kontaktu"<<endl;
+                cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
+                cout<<"1. TAK"<<endl;
+                cout<<"2. NIE"<<endl;
+                cin>>wybor;
+
+            }
+        }
+    }
+    while(wybor=='1');
+}
+
+void rejestracja (vector<Uzytkownik>& uzytkownicy)
+{
+    vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
+    Uzytkownik nowyUzytkownik;
+    string nazwaUzytkownika, haslo;
+
+    system("cls");
+    cout<<"Podaj nazwe uzytkownika: ";
+    cin>>nazwaUzytkownika;
+
+    while (istniejacyUzytkownik<uzytkownicy.end())
+    {
+        if (istniejacyUzytkownik->login==nazwaUzytkownika)
+        {
+            system("cls");
+            cout<<"Nazwa uzytkownika jest zajeta. Podaj inna nazwe uzytkownika: ";
+            cin>>nazwaUzytkownika;
+            istniejacyUzytkownik =uzytkownicy.begin();
+        }
+        else istniejacyUzytkownik++;
+    }
+    system("cls");
+    cout<<"Podaj haslo: ";
+    cin>>haslo;
+    nowyUzytkownik.login=nazwaUzytkownika;
+    nowyUzytkownik.haslo=haslo;
+    nowyUzytkownik.id=generowanieIDuzytkownika(uzytkownicy);
+    uzytkownicy.push_back(nowyUzytkownik);
+    system("cls");
+    cout<<"Konto zostalo zalozone";
+    Sleep(1000);
+}
+
+void zmianaHasla (vector<Uzytkownik>&uzytkownicy, int idZalogowanegoUzytkownika)
+{
+    vector<Uzytkownik>::iterator istniejacyUzytkownik;
+    string noweHaslo;
+
+
+    system("cls");
+    cout<<"Podaj nowe haslo: ";
+    cin>>noweHaslo;
+
+    for (istniejacyUzytkownik=uzytkownicy.begin(); istniejacyUzytkownik<=uzytkownicy.end(); istniejacyUzytkownik++)
+    {
+        if (istniejacyUzytkownik->id==idZalogowanegoUzytkownika)
+        {
+            system("cls");
+            istniejacyUzytkownik->haslo=noweHaslo;
+            cout<<"Haslo zostalo zmienione.";
+            Sleep(1000);
+        }
+    }
+}
+
+void zapisanieDoNowegoPliku ( vector <daneOsobowe>& ksiazkaAdresowa,int IdZalogowanegoUzytkownika)
+{
+    string linia;
+    fstream plikKontaktow;
+    fstream nowyPlikKontaktow;
+    vector<daneOsobowe>::iterator zapisywanyKontakt;
+    int idZPliku;
+    daneOsobowe daneZnajomego;
+    plikKontaktow.open("wizytowka.txt", ios::in);
+    nowyPlikKontaktow.open("wizytowka2.txt", ios::out);
+
+    if (plikKontaktow.good()==false)
+    {
+        cout<<"Nie udalo sie otworzyc pliku!";
+        Sleep(1000);
+    }
+
+    while(getline(plikKontaktow,linia))
+    {
+        stringstream pobranaLinia(linia);
+        string danaOsobowa;
+        vector<string> pobraneDane;
+
+        while(getline(pobranaLinia,danaOsobowa, '|'))
+        {
+            pobraneDane.push_back(danaOsobowa);
+        }
+        for(int i =0; i<7; i++)
+        {
+            switch(i)
+            {
+            case 0:
+                daneZnajomego.id = atoi(pobraneDane[i].c_str());
+                break;
+            case 1:
+                idZPliku=atoi(pobraneDane[i].c_str());
+                break;
+            case 2:
+                daneZnajomego.imie=pobraneDane[i];
+                break;
+            case 3:
+                daneZnajomego.nazwisko=pobraneDane[i];
+                break;
+            case 4:
+                daneZnajomego.email = pobraneDane[i];
+                break;
+            case 5:
+                daneZnajomego.numer_telefonu = pobraneDane[i];
+                break;
+            case 6:
+                daneZnajomego.adres = pobraneDane[i];
+                break;
+            }
+        }
+
+
+      for (zapisywanyKontakt =ksiazkaAdresowa.begin(); zapisywanyKontakt<=ksiazkaAdresowa.end(); zapisywanyKontakt++)
+        {
+            if(zapisywanyKontakt->id==daneZnajomego.id)
+            {
+        nowyPlikKontaktow<<zapisywanyKontakt->id<<"|";
+        nowyPlikKontaktow<<IdZalogowanegoUzytkownika<<"|";
+        nowyPlikKontaktow<<zapisywanyKontakt->imie<<"|";
+        nowyPlikKontaktow<<zapisywanyKontakt->nazwisko<<"|";
+        nowyPlikKontaktow<<zapisywanyKontakt->email<<"|";
+        nowyPlikKontaktow<<zapisywanyKontakt->numer_telefonu<<"|";
+        nowyPlikKontaktow<<zapisywanyKontakt->adres<<"|"<<endl;
+        break;
+            }
+            else if (zapisywanyKontakt==ksiazkaAdresowa.end())
+            {
+               nowyPlikKontaktow<<daneZnajomego.id<<"|";
+        nowyPlikKontaktow<<idZPliku<<"|";
+        nowyPlikKontaktow<<daneZnajomego.imie<<"|";
+        nowyPlikKontaktow<<daneZnajomego.nazwisko<<"|";
+        nowyPlikKontaktow<<daneZnajomego.email<<"|";
+        nowyPlikKontaktow<<daneZnajomego.numer_telefonu<<"|";
+        nowyPlikKontaktow<<daneZnajomego.adres<<"|"<<endl;
+
+            }
+        }
+    }
+    nowyPlikKontaktow.close();
+    plikKontaktow.close();
+
+}
+void podmianaPlikow ()
+{
+    remove("wizytowka.txt");
+    rename ("wizytowka2.txt", "wizytowka.txt");
+}
+
+
+int logowanie (vector<Uzytkownik>&uzytkownicy)
+{
+    string nazwaUzytkownika, haslo;
+    vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
+
+    system("cls");
+    cout<<"Podaj login: ";
+    cin>>nazwaUzytkownika;
+    while (istniejacyUzytkownik<uzytkownicy.end())
+    {
+        if (istniejacyUzytkownik->login==nazwaUzytkownika)
+        {
+            for(int i=0; i<3; i++)
+            {
+                system("cls");
+                cout<<"Podaj haslo. Pozostala ilosc prob "<<(3-i)<<". Haslo: ";
+                cin>>haslo;
+                if (istniejacyUzytkownik->haslo==haslo)
+                {
+                    system("cls");
+                    cout<<"Zostales zalogowany.";
+                    Sleep(1000);
+                    return istniejacyUzytkownik->id;
+                }
+            }
+            system("cls");
+            cout<<"Podales blednie haslo 3 razy. Poczekaj na mozliwosc ponownej proby logowania";
+            Sleep(3000);
+            return 0;
+        }
+        else istniejacyUzytkownik++;
+    }
+    system("cls");
+    cout<<"Nie odnaleziono loginu w systemie.";
+    Sleep(1500);
+    return 0;
+}
+
+int main()
+{
+    vector <daneOsobowe> ksiazkaAdresowa;
+    vector <Uzytkownik> uzytkownicy;
+    char wybor='0';
+    int idZalogowanegoUzytkownika=0;
+    int kontaktID=0;
+
+
+    ladowanieUzytkownikowZPliku(uzytkownicy);
+
+
+    while (1)
+    {
+        if (idZalogowanegoUzytkownika==0)
+        {
+
+            system("cls");
+            cout<<"---MENU GLOWNE---"<<endl;
+            cout<<"1. Logowanie"<<endl;
+            cout<<"2. Rejestracja"<<endl;
+            cout<<"9. Zamknij program"<<endl;
+            cin>>wybor;
+
+            if (wybor == '1')
+            {
+                idZalogowanegoUzytkownika=logowanie(uzytkownicy);
+                kontaktID=  otwieraniePlikuZapisanychDanych(ksiazkaAdresowa,idZalogowanegoUzytkownika);
+            }
+            else if(wybor == '2')
+            {
+                rejestracja (uzytkownicy);
+                zapisanieUzytkownikow(uzytkownicy);
+            }
+            else if (wybor == '9')
+            {
+                system("cls");
+                cout<<"Program zostanie zamkniety";
+                Sleep(1000);
+                exit(0);
+            }
+        }
+
+
         else
         {
-            cout<<"Nie masz jeszcze kontaktow.";
-            Sleep(2000);
-        }
-
-    }
-    void zmianaDanych ( vector<daneOsobowe>::iterator zmienianyKontakt, char wybranaOpcja)
-    {
-        switch (wybranaOpcja)
-        {
-        case '1':
-        {
-            string imie;
             system("cls");
-            cout<<"Prosze podac nowe imie: ";
-            cin>>imie;
-            zmienianyKontakt->imie=imie;
-            cout<<"Imie zostalo zmienione.";
-            Sleep(1000);
-            break;
-        }
-        case '2':
-        {
-            string nazwisko;
-            system("cls");
-            cout<<"Prosze podac nowe nazwisko: ";
-            cin>>nazwisko;
-            zmienianyKontakt->nazwisko=nazwisko;
-            cout<<"Nazwisko zostalo zmienione.";
-            Sleep(1000);
-            break;
-        }
-        case '3':
-        {
-            string email;
-            system("cls");
-            cout<<"Prosze podac nowy email: ";
-            cin>>email;
-            zmienianyKontakt->email=email;
-            cout<<"Email zostal zmieniony.";
-            Sleep(1000);
-            break;
-        }
-        case '4':
-        {
-            string numerTelefonu;
-            system("cls");
-            cout<<"Prosze podac nowy numer telefonu: ";
-            cin>>numerTelefonu;
-            zmienianyKontakt->numer_telefonu=numerTelefonu;
-            cout<<"Numer telefonu zostal zmieniony.";
-            Sleep(1000);
-            break;
-        }
-        case '5':
-        {
-            system("cls");
-            string adres;
-            system("cls");
-            cout<<"Prosze podac nowy adres: ";
-            cin>>adres;
-            zmienianyKontakt->adres=adres;
-            cout<<"Adres zostal zmieniony.";
-            Sleep(1000);
-            break;
-        }
-        case '6':
-        {
-            system("cls");
-            break;
-        }
-        }
+            cout<<"---MENU GLOWNE---"<<endl;
+            cout<<"1. Zapisz nowy kontakt"<<endl;
+            cout<<"2. Szukaj kontaktu"<<endl;
+            cout<<"3. Wyswietl wszystkie kontakty"<<endl;
+            cout<<"4. Usun kontakt"<<endl;
+            cout<<"5. Zmien dane kontaktu"<<endl;
+            cout<<"6. Zmien haslo"<<endl;
+            cout<<"9. Wyloguj sie"<<endl;
+            cin>>wybor;
 
-    }
-
-    void szukaniePoIDKontaktu (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
-    {
-        vector<daneOsobowe>::iterator zmienianyKontakt;
-        int szukaneID;
-        char wybranaOpcja;
-
-        system("cls");
-
-        cout<<"Jakie dane chcesz zmienic?"<<endl;
-        cout<<"1. Imie"<<endl;
-        cout<<"2. Nazwisko"<<endl;
-        cout<<"3. Email"<<endl;
-        cout<<"4. Numer telefonu"<<endl;
-        cout<<"5. Adres"<<endl;
-        cout<<"6. Powrot do menu glownego"<<endl;
-        cin>>wybranaOpcja;
-
-        while(wybranaOpcja!='6'&&wybor!='2')
-        {
-
-            system("cls");
-            cout<<"Prosze podac ID kontaktu: ";
-            cin>>szukaneID;
-
-            for (zmienianyKontakt =ksiazkaAdresowa.begin(); zmienianyKontakt<=ksiazkaAdresowa.end(); zmienianyKontakt++)
+            if (wybor == '1')
             {
-                if(zmienianyKontakt->id==szukaneID)
+                kontaktID=pobieranieDanychkontaktu(ksiazkaAdresowa, wybor,kontaktID);
+                zapisanieDoNowegoPliku(ksiazkaAdresowa,idZalogowanegoUzytkownika);
+
+            }
+            else if(wybor == '2')
+            {
+                while(1)
                 {
                     system("cls");
-                    cout<<"Zaleziony kontakt to "<<zmienianyKontakt->imie<<" "<<zmienianyKontakt->nazwisko<<" "<<zmienianyKontakt->adres<<endl;
-                    cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
-                    cout<<"1. TAK"<<endl;
-                    cout<<"2. NIE"<<endl;
+                    cout<<"1. Wyszukaj po imieniu"<<endl;
+                    cout<<"2. Wyszukaj po nazwisku"<<endl;
+                    cout<<"3. Wroc do menu glownego"<<endl;
                     cin>>wybor;
-                    if (wybor=='2')
+                    if (wybor == '1')
                     {
-                        zmianaDanych(zmienianyKontakt,wybranaOpcja);
+                        wyszukiwaniePoImieniu(ksiazkaAdresowa);
                     }
-                    break;
-                }
-                else if (zmienianyKontakt==ksiazkaAdresowa.end())
-                {
-                    system("cls");
-                    cout<<"Nie znaleziono kontaktu"<<endl;
-                    cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
-                    cout<<"1. TAK"<<endl;
-                    cout<<"2. NIE"<<endl;
-                    cin>>wybor;
-
+                    else if(wybor == '2')
+                    {
+                        wyszukiwaniePoNaziwsku(ksiazkaAdresowa);
+                    }
+                    else if(wybor == '3')
+                    {
+                        break;
+                    }
                 }
             }
-        }
-
-    }
-
-    void usuwanieKontaktu     (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
-    {
-        vector<daneOsobowe>::iterator zmienianyKontakt;
-        int szukaneID;
-        char wybranaOpcja;
-        do
-        {
-            system("cls");
-            cout<<"Prosze podac ID kontaktu: ";
-            cin>>szukaneID;
-
-
-            for (zmienianyKontakt =ksiazkaAdresowa.begin(); zmienianyKontakt<=ksiazkaAdresowa.end(); zmienianyKontakt++)
+            else if(wybor == '3')
             {
-                if(zmienianyKontakt->id==szukaneID)
-                {
-                    system("cls");
-                    cout<<"Twoj kontakt to "<<zmienianyKontakt->imie<<" "<<zmienianyKontakt->nazwisko<<" "<<zmienianyKontakt->adres<<endl;
-                    cout<<"Czy chcesz usunac ten kontakt?"<<endl;
-                    cout<<"1. TAK"<<endl;
-                    cout<<"2. NIE"<<endl;
-                    cin>>wybranaOpcja;
-                    switch (wybranaOpcja)
-                    {
-                    case '1':
-                    {
-                        system("cls");
-                        ksiazkaAdresowa.erase(zmienianyKontakt);
-                        cout<<"Kontakt zostal usuniety";
-                        Sleep(1000);
-
-                    }
-                    case '2':
-                    {
-                        system("cls");
-                        cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
-                        cout<<"1. TAK"<<endl;
-                        cout<<"2. NIE"<<endl;
-                        cin>>wybor;
-
-                    }
-                    }
-                    break;
-                }
-                else if (zmienianyKontakt==ksiazkaAdresowa.end())
-                {
-                    system("cls");
-                    cout<<"Nie znaleziono kontaktu"<<endl;
-                    cout<<"Czy chcesz wyszukac inny kontakt?"<<endl;
-                    cout<<"1. TAK"<<endl;
-                    cout<<"2. NIE"<<endl;
-                    cin>>wybor;
-
-                }
+                wyswietlanieWszystkichKontaktow(ksiazkaAdresowa);
             }
-        }
-        while(wybor=='1');
-    }
-
-    void rejestracja (vector<Uzytkownik>& uzytkownicy)
-    {
-        vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
-        Uzytkownik nowyUzytkownik;
-        string nazwaUzytkownika, haslo;
-
-        system("cls");
-        cout<<"Podaj nazwe uzytkownika: ";
-        cin>>nazwaUzytkownika;
-
-        while (istniejacyUzytkownik<uzytkownicy.end())
-        {
-            if (istniejacyUzytkownik->login==nazwaUzytkownika)
+            else if(wybor == '4')
             {
-                system("cls");
-                cout<<"Nazwa uzytkownika jest zajeta. Podaj inna nazwe uzytkownika: ";
-                cin>>nazwaUzytkownika;
-                istniejacyUzytkownik =uzytkownicy.begin();
+                usuwanieKontaktu(ksiazkaAdresowa,wybor);
+                zapisanieDanychDoPliku(ksiazkaAdresowa,idZalogowanegoUzytkownika);
             }
-            else istniejacyUzytkownik++;
-        }
-        system("cls");
-        cout<<"Podaj haslo: ";
-        cin>>haslo;
-        nowyUzytkownik.login=nazwaUzytkownika;
-        nowyUzytkownik.haslo=haslo;
-        nowyUzytkownik.id=generowanieIDuzytkownika(uzytkownicy);
-        uzytkownicy.push_back(nowyUzytkownik);
-        system("cls");
-        cout<<"Konto zostalo zalozone";
-        Sleep(2000);
-    }
-
-    void zmianaHasla (vector<Uzytkownik>&uzytkownicy, int idZalogowanegoUzytkownika)
-    {
-        vector<Uzytkownik>::iterator istniejacyUzytkownik;
-        string noweHaslo;
-
-
-        system("cls");
-        cout<<"Podaj nowe haslo: ";
-        cin>>noweHaslo;
-
-        for (istniejacyUzytkownik=uzytkownicy.begin(); istniejacyUzytkownik<=uzytkownicy.end(); istniejacyUzytkownik++)
-        {
-            if (istniejacyUzytkownik->id==idZalogowanegoUzytkownika)
+            else if(wybor == '5')
             {
-                system("cls");
-                istniejacyUzytkownik->haslo=noweHaslo;
-                cout<<"Haslo zostalo zmienione.";
-                Sleep(2000);
+                szukaniePoIDKontaktu(ksiazkaAdresowa,wybor);
+                zapisanieDoNowegoPliku(ksiazkaAdresowa,idZalogowanegoUzytkownika);
+            }
+            else if(wybor == '6')
+            {
+                zmianaHasla(uzytkownicy,idZalogowanegoUzytkownika);
+                zapisanieUzytkownikow(uzytkownicy);
+            }
+            else if (wybor == '9')
+            {
+                idZalogowanegoUzytkownika=0;
+                ksiazkaAdresowa.clear();
+                podmianaPlikow();
             }
         }
     }
-
-    int logowanie (vector<Uzytkownik>&uzytkownicy)
-    {
-        string nazwaUzytkownika, haslo;
-        vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
-
-        system("cls");
-        cout<<"Podaj login: ";
-        cin>>nazwaUzytkownika;
-        while (istniejacyUzytkownik<uzytkownicy.end())
-        {
-            if (istniejacyUzytkownik->login==nazwaUzytkownika)
-            {
-                for(int i=0; i<3; i++)
-                {
-                    system("cls");
-                    cout<<"Podaj haslo. Pozostala ilosc prob "<<(3-i)<<". Haslo: ";
-                    cin>>haslo;
-                    if (istniejacyUzytkownik->haslo==haslo)
-                    {
-                        system("cls");
-                        cout<<"Zostales zalogowany.";
-                        Sleep(2000);
-                        return istniejacyUzytkownik->id;
-                    }
-                }
-                system("cls");
-                cout<<"Podales blednie haslo 3 razy. Poczekaj na mozliwosc ponownej proby logowania";
-                Sleep(3000);
-                return 0;
-            }
-            else istniejacyUzytkownik++;
-        }
-        system("cls");
-        cout<<"Nie odnaleziono loginu w systemie.";
-        Sleep(2000);
-        return 0;
-    }
-
-    int main()
-    {
-        vector <daneOsobowe> ksiazkaAdresowa;
-        vector <Uzytkownik> uzytkownicy;
-        char wybor='0';
-        int idZalogowanegoUzytkownika=0;
-
-        fstream plikZapisanychDanych;
-        ladowanieUzytkownikowZPliku(plikZapisanychDanych,uzytkownicy);
-
-
-        while (1)
-        {
-            if (idZalogowanegoUzytkownika==0)
-            {
-
-                system("cls");
-                cout<<"---MENU GLOWNE---"<<endl;
-                cout<<"1. Logowanie"<<endl;
-                cout<<"2. Rejestracja"<<endl;
-                cout<<"9. Zamknij program"<<endl;
-                cin>>wybor;
-
-                if (wybor == '1')
-                {
-                    idZalogowanegoUzytkownika=logowanie(uzytkownicy);
-                    otwieraniePlikuZapisanychDanych(plikZapisanychDanych, ksiazkaAdresowa,idZalogowanegoUzytkownika);
-                }
-                else if(wybor == '2')
-                {
-                    rejestracja (uzytkownicy);
-                    zapisanieUzytkownikow(plikZapisanychDanych,uzytkownicy);
-                }
-                else if (wybor == '9')
-                {
-                    system("cls");
-                    cout<<"Program zostanie zamkniety";
-                    Sleep(1000);
-                    exit(0);
-                }
-            }
-
-
-            else
-            {
-                system("cls");
-                cout<<"---MENU GLOWNE---"<<endl;
-                cout<<"1. Zapisz nowy kontakt"<<endl;
-                cout<<"2. Szukaj kontaktu"<<endl;
-                cout<<"3. Wyswietl wszystkie kontakty"<<endl;
-                cout<<"4. Usun kontakt"<<endl;
-                cout<<"5. Zmien dane kontaktu"<<endl;
-                cout<<"6. Zmien haslo"<<endl;
-                cout<<"9. Wyloguj sie"<<endl;
-                cin>>wybor;
-
-                if (wybor == '1')
-                {
-                    pobieranieDanychkontaktu(ksiazkaAdresowa, wybor);
-                    zapisanieDanychDoPliku(plikZapisanychDanych,ksiazkaAdresowa,idZalogowanegoUzytkownika);
-
-                }
-                else if(wybor == '2')
-                {
-                    while(1)
-                    {
-                        system("cls");
-                        cout<<"1. Wyszukaj po imieniu"<<endl;
-                        cout<<"2. Wyszukaj po nazwisku"<<endl;
-                        cout<<"3. Wroc do menu glownego"<<endl;
-                        cin>>wybor;
-                        if (wybor == '1')
-                        {
-                            wyszukiwaniePoImieniu(ksiazkaAdresowa);
-                        }
-                        else if(wybor == '2')
-                        {
-                            wyszukiwaniePoNaziwsku(ksiazkaAdresowa);
-                        }
-                        else if(wybor == '3')
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if(wybor == '3')
-                {
-                    wyswietlanieWszystkichKontaktow(ksiazkaAdresowa);
-                }
-                else if(wybor == '4')
-                {
-                    usuwanieKontaktu(ksiazkaAdresowa,wybor);
-                    zapisanieDanychDoPliku(plikZapisanychDanych,ksiazkaAdresowa,idZalogowanegoUzytkownika);
-                }
-                else if(wybor == '5')
-                {
-                    szukaniePoIDKontaktu(ksiazkaAdresowa,wybor);
-                    zapisanieDanychDoPliku(plikZapisanychDanych,ksiazkaAdresowa,idZalogowanegoUzytkownika);
-                }
-                else if(wybor == '6')
-                {
-                    zmianaHasla(uzytkownicy,idZalogowanegoUzytkownika);
-                    zapisanieUzytkownikow(plikZapisanychDanych,uzytkownicy);
-                }
-                else if (wybor == '9')
-                {
-                    idZalogowanegoUzytkownika=0;
-                    ksiazkaAdresowa.clear();
-                }
-            }
-        }
-        return 0;
-    }
+    return 0;
+}
