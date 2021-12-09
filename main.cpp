@@ -790,13 +790,11 @@ void usuwanieKontaktu     (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
 int main()
 {
     vector <daneOsobowe> ksiazkaAdresowa;
-    //vector <Uzytkownik> uzytkownicy;
-    vector<User>users;
     char wybor='0';
     int idZalogowanegoUzytkownika=0;
     int kontaktID=0;
     User u;
-u.ladowanie(u.users);
+u.ladowanie();
 
 
 
@@ -815,13 +813,13 @@ u.ladowanie(u.users);
 
             if (wybor == '1')
             {
-                idZalogowanegoUzytkownika=u.logowanie(u.users);
+                idZalogowanegoUzytkownika=u.logowanie();
                 kontaktID=  otwieraniePlikuZapisanychDanych(ksiazkaAdresowa,idZalogowanegoUzytkownika);
             }
             else if(wybor == '2')
             {
-                u.rejestracja (u.users);
-                u.zapisanieUzytkownikow(u.users);
+                u.rejestracja ();
+                u.zapisanieUzytkownikow();
             }
             else if (wybor == '9')
             {
@@ -888,8 +886,8 @@ u.ladowanie(u.users);
             }
             else if(wybor == '6')
             {
-                u.zmianaHasla(u.users,idZalogowanegoUzytkownika);
-                u.zapisanieUzytkownikow(u.users);
+                u.zmianaHasla(idZalogowanegoUzytkownika);
+                u.zapisanieUzytkownikow();
             }
             else if (wybor == '9')
             {

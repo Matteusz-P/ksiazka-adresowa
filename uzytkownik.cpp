@@ -10,11 +10,10 @@
 using namespace std;
 
 
-void User::ladowanie (vector<User>&users)
+void User::ladowanie ()
 {
     string linia;
     fstream plikUzytkowinkow;
-// vector<User>users;
     User daneLogowania;
     plikUzytkowinkow.open("Uzytkownicy.txt", ios::in);
 
@@ -56,15 +55,15 @@ void User::ladowanie (vector<User>&users)
     plikUzytkowinkow.close();
 }
 
-int User::logowanie (vector<User>&uzytkownicy)
+int User::logowanie ()
 {
     string nazwaUzytkownika, haslo;
-    vector<User>::iterator istniejacyUzytkownik=uzytkownicy.begin();
+    vector<User>::iterator istniejacyUzytkownik=users.begin();
 
     system("cls");
     cout<<"Podaj login: ";
     cin>>nazwaUzytkownika;
-    while (istniejacyUzytkownik<uzytkownicy.end())
+    while (istniejacyUzytkownik<users.end())
     {
         if (istniejacyUzytkownik->login==nazwaUzytkownika)
         {
@@ -94,9 +93,9 @@ int User::logowanie (vector<User>&uzytkownicy)
     return 0;
 }
 
-void User::rejestracja (vector<User>& uzytkownicy)
+void User::rejestracja ()
 {
-    vector<User>::iterator istniejacyUzytkownik=uzytkownicy.begin();
+    vector<User>::iterator istniejacyUzytkownik=users.begin();
     User nowyUzytkownik;
     string nazwaUzytkownika, haslo;
 
@@ -104,14 +103,14 @@ void User::rejestracja (vector<User>& uzytkownicy)
     cout<<"Podaj nazwe uzytkownika: ";
     cin>>nazwaUzytkownika;
 
-    while (istniejacyUzytkownik<uzytkownicy.end())
+    while (istniejacyUzytkownik<users.end())
     {
         if (istniejacyUzytkownik->login==nazwaUzytkownika)
         {
             system("cls");
             cout<<"Nazwa uzytkownika jest zajeta. Podaj inna nazwe uzytkownika: ";
             cin>>nazwaUzytkownika;
-            istniejacyUzytkownik =uzytkownicy.begin();
+            istniejacyUzytkownik =users.begin();
         }
         else istniejacyUzytkownik++;
     }
@@ -120,21 +119,21 @@ void User::rejestracja (vector<User>& uzytkownicy)
     cin>>haslo;
     nowyUzytkownik.login=nazwaUzytkownika;
     nowyUzytkownik.haslo=haslo;
-    nowyUzytkownik.id=generowanieIDuzytkownika(uzytkownicy);
-    uzytkownicy.push_back(nowyUzytkownik);
+    nowyUzytkownik.id=generowanieIDuzytkownika();
+    users.push_back(nowyUzytkownik);
     system("cls");
     cout<<"Konto zostalo zalozone";
     Sleep(1000);
 }
 
-int User::generowanieIDuzytkownika (vector <User>& uzytkownicy)
+int User::generowanieIDuzytkownika ()
 {
-    int ilosc = uzytkownicy.size();
+    int ilosc = users.size();
     int wygenerowaneID;
 
     if(ilosc>0)
     {
-        wygenerowaneID=uzytkownicy[ilosc-1].id;
+        wygenerowaneID=users[ilosc-1].id;
         wygenerowaneID++;
         return wygenerowaneID;
     }
@@ -145,22 +144,22 @@ int User::generowanieIDuzytkownika (vector <User>& uzytkownicy)
     }
 }
 
-void User::zapisanieUzytkownikow ( vector <User>& uzytkownicy)
+void User::zapisanieUzytkownikow ( )
 {
     fstream plikUzytkowinkow;
-    int ilosc = uzytkownicy.size();
+    int ilosc = users.size();
 
     plikUzytkowinkow.open("Uzytkownicy.txt",ios::out);
     for (int i=0; i<ilosc; i++)
     {
-        plikUzytkowinkow<<uzytkownicy[i].id<<"|";
-        plikUzytkowinkow<<uzytkownicy[i].login<<"|";
-        plikUzytkowinkow<<uzytkownicy[i].haslo<<"|"<<endl;
+        plikUzytkowinkow<<users[i].id<<"|";
+        plikUzytkowinkow<<users[i].login<<"|";
+        plikUzytkowinkow<<users[i].haslo<<"|"<<endl;
     }
     plikUzytkowinkow.close();
 }
 
-void User::zmianaHasla (vector<User>&uzytkownicy, int idZalogowanegoUzytkownika)
+void User::zmianaHasla (int idZalogowanegoUzytkownika)
 {
     vector<User>::iterator istniejacyUzytkownik;
     string noweHaslo;
@@ -170,7 +169,7 @@ void User::zmianaHasla (vector<User>&uzytkownicy, int idZalogowanegoUzytkownika)
     cout<<"Podaj nowe haslo: ";
     cin>>noweHaslo;
 
-    for (istniejacyUzytkownik=uzytkownicy.begin(); istniejacyUzytkownik<=uzytkownicy.end(); istniejacyUzytkownik++)
+    for (istniejacyUzytkownik=users.begin(); istniejacyUzytkownik<=users.end(); istniejacyUzytkownik++)
     {
         if (istniejacyUzytkownik->id==idZalogowanegoUzytkownika)
         {

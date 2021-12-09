@@ -13,10 +13,10 @@ class User
 
 
 public:
-    int generowanieIDuzytkownika(vector <User>& users);
-   void ladowanie(vector<User>&users);
-   int logowanie (vector<User>&users);
-   void rejestracja (vector<User>& users);
-   void zapisanieUzytkownikow ( vector <User>& users);
-   void zmianaHasla (vector<User>&users, int idZalogowanegoUzytkownika);
+    int generowanieIDuzytkownika();
+   void ladowanie();
+   int logowanie ();
+   void rejestracja ();
+   void zapisanieUzytkownikow ( );
+   void zmianaHasla (int idZalogowanegoUzytkownika);
 };
