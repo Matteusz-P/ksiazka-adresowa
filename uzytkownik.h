@@ -13,6 +13,8 @@ class User
 
 
 public:
+   User (int ,string,string);
+
     int generowanieIDuzytkownika();
    void ladowanie();
    int logowanie ();

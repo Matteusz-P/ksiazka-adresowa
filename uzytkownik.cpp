@@ -9,12 +9,21 @@
 
 using namespace std;
 
+User::User(int i, string l, string h)
+{
+    id=i;
+    login=l;
+    haslo=h;
+
+}
+
+
 
 void User::ladowanie ()
 {
     string linia;
     fstream plikUzytkowinkow;
-    User daneLogowania;
+    User daneLogowania(0,"brak","brak");
     plikUzytkowinkow.open("Uzytkownicy.txt", ios::in);
 
     if (plikUzytkowinkow.good()==false)
@@ -96,7 +105,7 @@ int User::logowanie ()
 void User::rejestracja ()
 {
     vector<User>::iterator istniejacyUzytkownik=users.begin();
-    User nowyUzytkownik;
+    User nowyUzytkownik(0,"brak","brak");
     string nazwaUzytkownika, haslo;
 
     system("cls");

@@ -793,7 +793,7 @@ int main()
     char wybor='0';
     int idZalogowanegoUzytkownika=0;
     int kontaktID=0;
-    User u;
+    User u(0,"brak","brak");
 u.ladowanie();
 
 
