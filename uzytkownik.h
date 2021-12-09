@@ -8,13 +8,15 @@ class User
     private:
     int id;
     string login, haslo;
+    public:
+    vector<User> users;
 
 
 public:
-    int generowanieIDuzytkownika(vector <User>& uzytkownicy);
+    int generowanieIDuzytkownika(vector <User>& users);
    void ladowanie(vector<User>&users);
-   int logowanie (vector<User>&uzytkownicy);
-   void rejestracja (vector<User>& uzytkownicy);
-   void zapisanieUzytkownikow ( vector <User>& uzytkownicy);
-   void zmianaHasla (vector<User>&uzytkownicy, int idZalogowanegoUzytkownika);
+   int logowanie (vector<User>&users);
+   void rejestracja (vector<User>& users);
+   void zapisanieUzytkownikow ( vector <User>& users);
+   void zmianaHasla (vector<User>&users, int idZalogowanegoUzytkownika);
 };

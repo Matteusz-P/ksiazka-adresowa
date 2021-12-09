@@ -796,7 +796,7 @@ int main()
     int idZalogowanegoUzytkownika=0;
     int kontaktID=0;
     User u;
-u.ladowanie(users);
+u.ladowanie(u.users);
 
 
 
@@ -815,13 +815,13 @@ u.ladowanie(users);
 
             if (wybor == '1')
             {
-                idZalogowanegoUzytkownika=u.logowanie(users);
+                idZalogowanegoUzytkownika=u.logowanie(u.users);
                 kontaktID=  otwieraniePlikuZapisanychDanych(ksiazkaAdresowa,idZalogowanegoUzytkownika);
             }
             else if(wybor == '2')
             {
-                u.rejestracja (users);
-                u.zapisanieUzytkownikow(users);
+                u.rejestracja (u.users);
+                u.zapisanieUzytkownikow(u.users);
             }
             else if (wybor == '9')
             {
@@ -888,8 +888,8 @@ u.ladowanie(users);
             }
             else if(wybor == '6')
             {
-                u.zmianaHasla(users,idZalogowanegoUzytkownika);
-                u.zapisanieUzytkownikow(users);
+                u.zmianaHasla(u.users,idZalogowanegoUzytkownika);
+                u.zapisanieUzytkownikow(u.users);
             }
             else if (wybor == '9')
             {
