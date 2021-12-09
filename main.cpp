@@ -5,6 +5,7 @@
 #include<string>
 #include<vector>
 #include<sstream>
+#include "uzytkownik.h"
 
 using namespace std;
 
@@ -214,7 +215,7 @@ string pobieranieNumeruTelefonu ()
 
     return numer_telefonu;
 }
-int generowanieIDuzytkownika (vector <Uzytkownik>& uzytkownicy)
+/*int generowanieIDuzytkownika (vector <Uzytkownik>& uzytkownicy)
 {
     int ilosc = uzytkownicy.size();
     int wygenerowaneID;
@@ -230,7 +231,7 @@ int generowanieIDuzytkownika (vector <Uzytkownik>& uzytkownicy)
         wygenerowaneID=1;
         return wygenerowaneID;
     }
-}
+}*/
 
 int pobieranieDanychkontaktu (vector <daneOsobowe>& ksiazkaAdresowa,int ostatniId, int idZalogowanegoUzytkownika)
 {
@@ -634,7 +635,7 @@ void usuwanieKontaktu     (vector <daneOsobowe>& ksiazkaAdresowa, char wybor)
     while(wybor=='1');
 }
 
-void ladowanieUzytkownikowZPliku (vector <Uzytkownik>& uzytkownicy)
+/*void ladowanieUzytkownikowZPliku (vector <Uzytkownik>& uzytkownicy)
 {
     string linia;
     fstream plikUzytkowinkow;
@@ -677,8 +678,8 @@ void ladowanieUzytkownikowZPliku (vector <Uzytkownik>& uzytkownicy)
         uzytkownicy.push_back(daneLogowania);
     }
     plikUzytkowinkow.close();
-}
-void zapisanieUzytkownikow ( vector <Uzytkownik>& uzytkownicy)
+}*/
+/*void zapisanieUzytkownikow ( vector <Uzytkownik>& uzytkownicy)
 {
     fstream plikUzytkowinkow;
     int ilosc = uzytkownicy.size();
@@ -692,8 +693,8 @@ void zapisanieUzytkownikow ( vector <Uzytkownik>& uzytkownicy)
     }
     plikUzytkowinkow.close();
 }
-
-void rejestracja (vector<Uzytkownik>& uzytkownicy)
+*/
+/*void rejestracja (vector<Uzytkownik>& uzytkownicy)
 {
     vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
     Uzytkownik nowyUzytkownik;
@@ -724,9 +725,9 @@ void rejestracja (vector<Uzytkownik>& uzytkownicy)
     system("cls");
     cout<<"Konto zostalo zalozone";
     Sleep(1000);
-}
+}*/
 
-void zmianaHasla (vector<Uzytkownik>&uzytkownicy, int idZalogowanegoUzytkownika)
+/*void zmianaHasla (vector<Uzytkownik>&uzytkownicy, int idZalogowanegoUzytkownika)
 {
     vector<Uzytkownik>::iterator istniejacyUzytkownik;
     string noweHaslo;
@@ -747,8 +748,8 @@ void zmianaHasla (vector<Uzytkownik>&uzytkownicy, int idZalogowanegoUzytkownika)
         }
     }
 }
-
-int logowanie (vector<Uzytkownik>&uzytkownicy)
+*/
+/*int logowanie (vector<Uzytkownik>&uzytkownicy)
 {
     string nazwaUzytkownika, haslo;
     vector<Uzytkownik>::iterator istniejacyUzytkownik=uzytkownicy.begin();
@@ -784,18 +785,20 @@ int logowanie (vector<Uzytkownik>&uzytkownicy)
     cout<<"Nie odnaleziono loginu w systemie.";
     Sleep(1500);
     return 0;
-}
+}*/
 
 int main()
 {
     vector <daneOsobowe> ksiazkaAdresowa;
-    vector <Uzytkownik> uzytkownicy;
+    //vector <Uzytkownik> uzytkownicy;
+    vector<User>users;
     char wybor='0';
     int idZalogowanegoUzytkownika=0;
     int kontaktID=0;
+    User u;
+u.ladowanie(users);
 
 
-    ladowanieUzytkownikowZPliku(uzytkownicy);
 
 
     while (1)
@@ -812,13 +815,13 @@ int main()
 
             if (wybor == '1')
             {
-                idZalogowanegoUzytkownika=logowanie(uzytkownicy);
+                idZalogowanegoUzytkownika=u.logowanie(users);
                 kontaktID=  otwieraniePlikuZapisanychDanych(ksiazkaAdresowa,idZalogowanegoUzytkownika);
             }
             else if(wybor == '2')
             {
-                rejestracja (uzytkownicy);
-                zapisanieUzytkownikow(uzytkownicy);
+                u.rejestracja (users);
+                u.zapisanieUzytkownikow(users);
             }
             else if (wybor == '9')
             {
@@ -885,8 +888,8 @@ int main()
             }
             else if(wybor == '6')
             {
-                zmianaHasla(uzytkownicy,idZalogowanegoUzytkownika);
-                zapisanieUzytkownikow(uzytkownicy);
+                u.zmianaHasla(users,idZalogowanegoUzytkownika);
+                u.zapisanieUzytkownikow(users);
             }
             else if (wybor == '9')
             {
